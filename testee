@@ -12,84 +12,7 @@ HLY 47<br />S2405-8440(15)30055-4<br />10.1016/j.heliyon.2015.e00047<br />001<br
 
 
 
-package sampleworkout;
-
-import java.io.*;
-import org.xml.sax.*;
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
-import javax.xml.transform.sax.*;
-
-public class ToXML {
-	
-				  BufferedReader in;
-				  StreamResult out;
-
-				 TransformerHandler th;
-				 
-
-				  public static void main (String args[]) {
-				      new ToXML().begin();
-				  }
-
-				  public void begin () {
-				    try{
-				      in = new BufferedReader(new FileReader("D:/data.txt"));
-				      out = new StreamResult("D:/data.xml");
-				      openXml();
-				      String str;
-				      while ((str = in.readLine()) != null) {
-				         process(str);
-				      }
-				      in.close();
-				      closeXml();
-				    }
-				    catch (Exception e) {
-				    	e.printStackTrace(); }
-				    }
-				
-
-
-				  public void openXml() throws ParserConfigurationException,TransformerConfigurationException,SAXException{
-					 
-						 
-						  SAXTransformerFactory tf=(SAXTransformerFactory)SAXTransformerFactory.newInstance();
-						  th=tf.newTransformerHandler();
-						  
-						  Transformer serilizer=th.getTransformer();
-						  serilizer.setOutputProperty("{http://xml.apache.org/xstl}indent-amount", "4");
-						  serilizer.setOutputProperty(OutputKeys.INDENT, "yes");
-						  th.setResult(out);
-						  th.startDocument();
-						  th.startElement(null, null, "inserts",null);
-						  }
-				  		  
-				  		  public void process(String s) throws SAXException{
-						  th.startElement(null, null, "option",null);
-						  th.characters(s.toCharArray(), 0, s.length());
-						  th.endElement(null, null, "option");
-				  		  }
-					  
-					  	 
-				  		  public void closeXml() throws SAXException{
-						  th.endElement(null, null, "inserts");
-						  th.endDocument();
-						  
-						  
-					  }
-					 
-					  
-					  
-					  
-				  }	 
-				  
-				  
-				  
-				  
-				  
-				  
- import java.io.BufferedReader;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 
@@ -129,7 +52,17 @@ public class Test {
             String str;
             // declare an array that can contain 4 strings
             String[] SArray=new String[4];
+            String s;
             int i = 0;
+            while ((s = in.readLine()) != null) {
+            	String a[]=s.split("<br />");
+            	for(int j=0;j<a.length;j++)
+            	{
+            		System.out.println(a[j]);
+            	}
+            	 process(a);
+				System.out.println(s);
+			}
 
             while ((str = in.readLine()) != null) {
 //              System.out.println("input line: " + str);
@@ -138,7 +71,7 @@ public class Test {
 
             }
 
-            process(SArray);
+           
 
             in.close();
             closeXML();
@@ -167,24 +100,24 @@ public class Test {
 
     }
 
-    public void process(String[] elements) throws SAXException {
+    public void process(String[] a) throws SAXException {
 //      System.out.println("number of elements: " + elements.length);
         atts.clear();
 
         th.startElement("", "", "jid", atts);
-        th.characters(elements[0].toCharArray(), 0, elements[0].length());
+        th.characters(a[0].toCharArray(), 0, a[0].length());
         th.endElement("", "", "jid");
 
         th.startElement("", "", "aid", atts);
-        th.characters(elements[1].toCharArray(), 0, elements[1].length());
+        th.characters(a[1].toCharArray(), 0, a[1].length());
         th.endElement("", "", "aid");
 
         th.startElement("", "", "amma", atts);
-        th.characters(elements[2].toCharArray(), 0, elements[2].length());
+        th.characters(a[2].toCharArray(), 0, a[2].length());
         th.endElement("", "", "amma");
 
         th.startElement("", "", "anna", atts);
-        th.characters(elements[3].toCharArray(), 0, elements[3].length());
+        th.characters(a[3].toCharArray(), 0, a[3].length());
         th.endElement("", "", "anna");
 
     }
@@ -195,6 +128,3 @@ public class Test {
         th.endDocument();
     }
 }
-					  
-					  
-					 
