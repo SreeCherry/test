@@ -1,0 +1,88 @@
+
+HLY 47<br />S2405-8440(15)30055-4<br />10.1016/j.heliyon.2015.e00047<br />001<br /><br />
+
+<item-info>
+<jid>HLY</jid>
+<aid>47</aid>
+<ce:article-number>e00047</ce:article-number>
+<ce:pii>S2405-8440(15)30055-4</ce:pii>
+<ce:doi>10.1016/j.heliyon.2015.e00047</ce:doi>
+<ce:copyright type="unknown" year="2015"/>
+</item-info>
+
+
+
+package sampleworkout;
+
+import java.io.*;
+import org.xml.sax.*;
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.stream.*;
+import javax.xml.transform.sax.*;
+
+public class ToXML {
+	
+				  BufferedReader in;
+				  StreamResult out;
+
+				 TransformerHandler th;
+				 
+
+				  public static void main (String args[]) {
+				      new ToXML().begin();
+				  }
+
+				  public void begin () {
+				    try{
+				      in = new BufferedReader(new FileReader("D:/data.txt"));
+				      out = new StreamResult("D:/data.xml");
+				      openXml();
+				      String str;
+				      while ((str = in.readLine()) != null) {
+				         process(str);
+				      }
+				      in.close();
+				      closeXml();
+				    }
+				    catch (Exception e) {
+				    	e.printStackTrace(); }
+				    }
+				
+
+
+				  public void openXml() throws ParserConfigurationException,TransformerConfigurationException,SAXException{
+					 
+						 
+						  SAXTransformerFactory tf=(SAXTransformerFactory)SAXTransformerFactory.newInstance();
+						  th=tf.newTransformerHandler();
+						  
+						  Transformer serilizer=th.getTransformer();
+						  serilizer.setOutputProperty("{http://xml.apache.org/xstl}indent-amount", "4");
+						  serilizer.setOutputProperty(OutputKeys.INDENT, "yes");
+						  th.setResult(out);
+						  th.startDocument();
+						  th.startElement(null, null, "inserts",null);
+						  }
+				  		  
+				  		  public void process(String s) throws SAXException{
+						  th.startElement(null, null, "option",null);
+						  th.characters(s.toCharArray(), 0, s.length());
+						  th.endElement(null, null, "option");
+				  		  }
+					  
+					  	 
+				  		  public void closeXml() throws SAXException{
+						  th.endElement(null, null, "inserts");
+						  th.endDocument();
+						  
+						  
+					  }
+					 
+					  
+					  
+					  
+				  }	  
+					  
+					  
+					 
