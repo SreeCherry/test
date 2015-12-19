@@ -1,0 +1,22 @@
+hi ra 
+
+
+<item-info>
+<jid>HLY</jid>
+<aid>47</aid>
+<ce:article-number>e00047</ce:article-number>
+<ce:pii>S2405-8440(15)30055-4</ce:pii>
+<ce:doi>10.1016/j.heliyon.2015.e00047</ce:doi>
+</item-info>
+the above formate i need out put 
+
+but previously u done code in the below format 
+but i need in above formate pls send me 'ra 
+
+
+<jid>HLY 47</jid>
+    <ce:pii>S2405-8440(15)30055-4</ce:pii>
+    <ce:doi>10.1016/j.heliyon.2015.e00047</ce:doi>
+</item-info>
+
+i need to split jid as jid and aid by using space i need to split and e00047< also need to appear as article number 
