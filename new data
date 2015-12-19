@@ -1,0 +1,224 @@
+package Sample;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.regex.Pattern;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import com.sun.org.apache.xerces.internal.impl.xs.identity.Selector.Matcher;
+
+/* 
++ * This program reads a 4 lines text file land creates an XML structure around
++ * the raw data. The XML structure is then copied to an xml output file. 
++ */
+public class NewMyCode {
+
+
+   BufferedReader in;
+    StreamResult out;
+
+    TransformerHandler th;
+    AttributesImpl atts;
+
+    // Here's our entry point ... 
+    public static void main(String args[]) {
+        new NewMyCode().doit();
+    }
+
+    public void doit() {
+        try {
+            in = new BufferedReader(new FileReader("D:\\abc.txt"));
+            out = new StreamResult(new FileWriter("D:\\abcdef.xml"));
+            initXML();
+            String str = "";
+            String s="";
+            while ((s = in.readLine()) != null) { 
+            	str += s+"\n";
+			}
+            System.out.println("str..."+str);
+            
+            str=str.replaceAll("<([^/!?])", "<td:$1");
+       	 //s = s.replaceAll("<", "td:");
+       	 str=str.replaceAll("</", "</td:");
+       	 
+       	System.out.println("My Output is==== : " +str); 
+            
+//      	System.exit(0);
+       	 
+       	ItemInfo(str);
+       	
+            // declare an array that can contain 4 strings
+            String[] SArray=new String[4];
+//            String s;
+            int i = 0;
+            while ((s = in.readLine()) != null) { 
+            	str += s;
+            	String s2=s.replaceAll("<br />", "td: ");
+//            	System.out.println(s2);
+            	String a[]=s2.split(" ");
+            	for(int j=0;j<a.length;j++)
+            	{
+            		System.out.println(a[j]);
+//            		System.exit(0);
+            		            		
+            	}
+            	ItemInfo(a);
+				System.out.println(s);
+			}
+            System.out.println(str);
+
+            while ((str = in.readLine()) != null) {
+              System.out.println("input line: " + str);
+                SArray[i]=str;
+                i++;
+
+            }
+
+           
+
+            in.close();
+            closeXML();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+//    private void ItemInfo(String str) {
+		// TODO Auto-generated method stub
+		
+//	}
+
+	private void ItemInfo(String str) {
+		// TODO Auto-generated method stub
+
+    	System.out.println("Item-info"+str);
+    	
+    	Pattern p = Pattern.compile("<td:div\\s+([^>]*?)>(.*?)</td:div>");
+    	//String input = "6 example input 4";
+    	java.util.regex.Matcher m = p.matcher(str);
+    	String  iteminfo_str="";
+    	if (m.find()) {
+    	   
+    		iteminfo_str=m.group();
+    		//str.replace(iteminfo_str,"");
+    		str=removefromstr("<td:div\\s+([^>]*?)>(.*?)</td:div>",str);
+    		System.out.println("iteminfo_str:"+iteminfo_str);
+    		System.out.println("str:"+str);
+    		
+    		
+    	}
+    	
+    	// to start work at here 
+    	//pppppppppppppppppppppppppppppppppppppppppp
+    	
+//    	String  iteminfo_str="";
+//    	iteminfo_str=str.matches("<td:div\\s+([^>]*?)>(.*?)</td:div>");
+//    	
+    	System.exit(0);
+    
+		
+	}
+	
+	
+	public String removefromstr(String removeStr,String str) {
+		System.out.println("removeStr:"+removeStr);
+		  Pattern patt = Pattern.compile((String) removeStr);
+		  java.util.regex.Matcher m = patt.matcher(str);
+		  StringBuffer sb = new StringBuffer(str.length());
+		  while (m.find()) {
+		    String text = m.group();
+		    System.out.println("text:"+text);
+		    // ... possibly process 'text' ...
+		    System.out.println("sb-before:"+sb.toString());
+		    //m.appendReplacement(sb, m.quoteReplacement(text));
+		    m.appendReplacement(sb, "");
+		    System.out.println("sb-after:"+sb.toString());
+		  }
+		  m.appendTail(sb);
+		  return sb.toString();
+		}
+	
+	
+
+	public void initXML() throws ParserConfigurationException,
+            TransformerConfigurationException, SAXException {
+        // JAXP + SAX
+        SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory
+                .newInstance();
+
+        th = tf.newTransformerHandler();
+        Transformer serializer = th.getTransformer();
+        serializer.setOutputProperty(OutputKeys.ENCODING, "ISO-8859-1");
+        // pretty XML output
+        serializer.setOutputProperty(
+                "{http://xml.apache.org/xslt}indent-amount", "4");
+        serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+        th.setResult(out);
+        th.startDocument();
+        atts = new AttributesImpl();
+        th.startElement("", "", "item-info", atts);
+
+    }
+
+    public void ItemInfo(String[] a) throws SAXException {
+    	
+//      System.out.println("number of elements: " + elements.length);
+    	
+    	System.out.println("Item-info"+a);
+    	System.exit(0);
+    }
+
+//        atts.clear();
+
+        /*th.startElement("", "", "jid", atts);
+        th.characters(a[0].toCharArray(), 0, a[0].length());
+        th.endElement("", "", "jid");
+        
+
+        th.startElement("", "", "aid", atts);
+        th.characters(a[1].toCharArray(), 0, a[1].length());
+        th.endElement("", "", "aid");
+        
+       
+       
+        th.startElement("", "", "ce:article-number", atts);
+        th.characters(a[2].toCharArray(), 0, a[2].length());
+        th.endElement("", "", "ce:article-number");
+
+        th.startElement("", "", "ce:pii", atts);
+        th.characters(a[3].toCharArray(), 0, a[3].length());
+        th.endElement("", "", "ce:pii");
+    
+
+    }
+*/
+    public void closeXML() throws SAXException {
+       
+        th.endElement("", "", "item-info");
+        th.endDocument();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+http://www.javamex.com/tutorials/regular_expressions/search_replace_loop.shtml#.VnVHbVIvTIU
