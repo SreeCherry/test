@@ -1,0 +1,457 @@
+package New;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.regex.*;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import com.sun.org.apache.xerces.internal.impl.xs.identity.Selector.Matcher;
+
+public class Code
+{
+
+		   BufferedReader in;
+		    StreamResult out;
+		    TransformerHandler th;
+		    AttributesImpl atts;
+		    
+		    BufferedWriter log=null;
+        	static File logFile=new File("D:\\Log.txt");
+        	static FileOutputStream fos=null;
+        	
+        	String LangCode="|aa|ab|af|am|ar|as|ay|az|ba|be|bg|bh|bi|bn|bo|br|ca|co|cs|cy|da|de|dz|el|en|eo|es|et|eu|fa|fi|fj|fo|fr|fy|ga|gd|gl|gn|gu|ha|he|hi|hr|hu|hy|ia|id|ie|ik|is|it|ja|jw|ka|kk|kl|km|kn|ko|ks|ku|ky|la|ln|lo|lt|lv|mg|mi|mk|ml|mn|mo|mr|ms|mt|my|na|ne|nl|no|oc|om|or|pa|pl|ps|pt|qu|rm|rn|ro|ru|rw|sa|sd|sg|si|sk|sl|sm|sn|so|sq|sr|ss|st|su|sv|sw|ta|te|tg|th|ti|tk|tl|tn|to|tr|ts|tt|tw|uk|ur|uz|vi|vo|wo|xh|yi|yo|zh|zu|";
+		    
+        	// Here's our entry point ... 
+        	
+     	 public static void main(String args[]) throws IOException
+		    {
+     		 	fos=new FileOutputStream(logFile);
+     		 
+		    	Initlisation initial = new Initlisation();
+				Initlisation.checkjavaVersion(1.7f);
+				
+				if(!logFile.exists())
+	        	{
+	        		logFile.createNewFile();
+	        	}
+		    	
+		        new Code().doit();
+		    }
+
+		    public void doit() 
+		    	{
+		    	   try 
+		    		{
+		        	
+		            in = new BufferedReader(new FileReader("D:\\abc.txt"));
+		            out = new StreamResult(new FileWriter("D:\\output.xml"));
+		            initXML();
+		            String str = "";
+		            String s="";
+		            while ((s = in.readLine()) != null)
+		            { 
+		            	str += s+"\n";
+					}
+//		            System.out.println("str..."+str);
+		            
+		            str=str.replaceAll("<([^/!?])", "<td:$1");
+		       	
+		       	 str=str.replaceAll("</", "</td:");
+		       	 
+//		       	System.out.println("My Output is==== : " +str); 
+		          		       	 
+	       	ItemInfo(str);
+		       
+		       
+		            in.close();
+		            closeXML();
+		        }
+		        catch (Exception e) 
+		        {
+		            e.printStackTrace();
+		        }
+		    }
+
+			private void ItemInfo(String str) throws IOException, SAXException 
+			{
+				System.out.println("Processing Item-Info...");
+				
+//		    	System.out.println("Item-info...str.."+str);
+		    	
+		    	Pattern p = Pattern.compile("<td:div\\s+id=\"xps_meta\"\\s*>(.*?)</td:div>");
+		    	
+//		    	//String input = "6 example input 4";
+//		    	java.util.regex.Matcher m = p.matcher(str);    	
+//		        Pattern p = Pattern.compile("<td:br />");
+		    	
+		        java.util.regex.Matcher m=p.matcher(str);
+		        
+		    	String  iteminfo_str="";
+		    	if (m.find()) 
+		    	{
+		    	   
+		    		iteminfo_str=m.group();
+		    		//str.replace(iteminfo_str,"");
+		    		int prepos=0;
+		    		int postpos=0;
+		    		prepos=m.start();
+		    		postpos=m.end();
+//		    		System.out.println(postpos); 		
+		    		
+		    		str=str.substring(0,prepos)+str.substring(postpos+1,str.length());
+//		    		System.out.println("prepos..."+prepos);
+//		    		System.out.println("postpos.."+postpos);
+		    		
+//		    		str=removefromstr("<td:div\\s+([^>]*?)>(.*?)</td:div>",str);
+		    		
+//		    		System.out.println("iteminfo_str:..."+iteminfo_str);
+//		    		System.out.println("str:..."+str);
+		    		
+		    		iteminfo_str=ProcessItemInfo(iteminfo_str);
+		    		System.exit(0);
+		    		
+		    		Pattern p1 = Pattern.compile("<td:br />");
+			        String[] items = p1.split(iteminfo_str);
+			        for(String str1 : items) 
+			             {
+//			               System.out.println("My split output is====> : " +str1);
+			             }	
+			        
+//			      	 System.out.print(items);
+			        Arrays.sort(items);
+//			        ItemInfoGen(items);
+		    		
+		    		
+		    	}
+		    	else
+		    	{
+		    		//log 4j writting error msg to fil
+		    		String err1="Error[3]: No ItemInfo found in the input file. This information is mandatory for all files.\n";
+		    		System.out.println(err1);
+		    		byte b[]=err1.getBytes();
+//		    		System.out.println(err1);
+		    		fos.write(b);
+		    		System.exit(3);
+		    	}
+		    }
+			
+			
+			private String ProcessItemInfo(String iteminfo_str) throws IOException {
+				String localiteminfo_str=iteminfo_str;
+				localiteminfo_str=localiteminfo_str.replaceAll("^<td:div\\s+id=\"xps_meta\"\\s*>\\s*\\**", "");
+				localiteminfo_str=localiteminfo_str.replaceAll("\\s*\\**</td:div>$", "");
+				
+//				System.out.println("localiteminfo_str=====:"+localiteminfo_str);
+				
+							
+//===============================================Article language code capturing
+				System.out.println("\tProcessing Article Language...");
+				String langcode="";
+				if(localiteminfo_str.matches("(.*?)<td:br\\s*/>\\s*Lang:\\s*([a-z]+)\\s*<td:br\\s*/>(.*?)"))
+				{
+					Pattern patt = Pattern.compile("<td:br\\s*/>\\s*Lang:\\s*([a-z]+)\\s*<td:br\\s*/>");
+					java.util.regex.Matcher m = patt.matcher(localiteminfo_str);
+					if(m.find()) 
+					  {
+						langcode=m.group(1);
+						localiteminfo_str=localiteminfo_str.replaceAll(m.group(),"<td:br/>");
+						  }
+//					System.out.println("langcode:\'"+langcode+"\'");
+					if(LangCode.matches("(.*)[|]"+langcode+"[|](.*)")){
+//						System.out.println("langcode:correct");
+					}
+					else 
+					{
+						//log 4j writting error msg to fil
+			    		String err1="Error[5]: The given Article Language code \'"+langcode+"\' is invalid!\nThe valid Article Language codes are:"+LangCode;
+			    		System.out.println(err1);
+			    		byte b[]=err1.getBytes();
+			    		fos.write(b);
+			    		System.exit(5);
+					}
+//					System.out.println("loc:.."+localiteminfo_str);
+				}else{		
+					//log 4j writting error msg to fil
+		    		String err1="Error[4]: No Article Language code found in the input file. This is mandatory for all files.";
+		    		System.out.println(err1);
+		    		byte b[]=err1.getBytes();
+		    		fos.write(b);
+		    		System.exit(4);
+				}
+//=============================================================
+				System.out.println("\tProcessing Client Information...");
+				String client="";
+				if(localiteminfo_str.matches("(.*?)<td:br\\s*/>\\s*Client:\\s*([A-Za-z]+)\\s*<td:br\\s*/>(.*?)"))
+									
+				{
+//					System.out.println("local:.."+localiteminfo_str);
+					Pattern pattern = Pattern.compile("<td:br\\s*/>\\s*Client:\\s*([A-Za-z]+)\\s*<td:br\\s*/>");
+					java.util.regex.Matcher m = pattern.matcher(localiteminfo_str);
+					if(m.find()) 
+					  {
+						client=m.group(1);
+//						System.out.println("ClientInfo:.."+client);
+						localiteminfo_str=localiteminfo_str.replaceAll(m.group(),"<td:br/>");
+					  }
+//					System.out.println("client:..."+client);
+					if(client.matches("[E][L][J]")){
+//						System.out.println("ClientDetails.."+client);
+					}
+					else 
+					{
+						//log 4j writting error msg to fil
+			    		String err1="Error[6]: Invalid Client Information "+client+" is given!\nThe valid client name is ELJ";
+			    		System.out.println(err1);
+			    		byte b[]=err1.getBytes();
+			    		fos.write(b);
+			    		System.exit(6);
+					}
+//					System.out.println("local:.."+localiteminfo_str);
+									
+				}
+				else 
+				{
+					//log 4j writting error msg to fil
+		    		String err1="Error[8]: Client Information is not given!";
+		    		System.out.println(err1);
+		    		byte b[]=err1.getBytes();
+		    		fos.write(b);
+		    		System.exit(8);
+				}
+					
+//=============================================================
+				System.out.println("\tProcessing Jid and Aid ...");
+				String jid="";
+				String aid="";
+				if(localiteminfo_str.matches("(.*?)<td:br\\s*/>\\s*([A-Za-z]+)\\s+(\\d+)\\s*<td:br\\s*/>(.*?)"))
+									
+				{
+//					System.out.println("local:.."+localiteminfo_str);
+					Pattern pattern = Pattern.compile("<td:br\\s*/>\\s*([A-Za-z]+)\\s+(\\d+)\\s*<td:br\\s*/>");
+					java.util.regex.Matcher m = pattern.matcher(localiteminfo_str);
+					if(m.find()) 
+					  {
+						jid=m.group(1);
+						aid=m.group(2);
+//						System.out.println("Jid,aid:.."+jid+","+aid);
+						localiteminfo_str=localiteminfo_str.replaceAll(m.group(),"<td:br/>");
+					  }
+//					System.out.println("client:..."+client);
+	
+//					System.out.println("local:.."+localiteminfo_str);
+									
+				}
+				else
+				{
+					//log 4j writting error msg to fil
+		    		String err1="\t\tError[7]: Either Journel-id or Article-id not found!\n\t\tCorrect format is AAA 123";
+		    		System.out.println(err1);
+		    		byte b[]=err1.getBytes();
+		    		fos.write(b);
+		    		System.exit(7);
+				}
+				
+//=============================================================		
+				System.out.println("\tProcessing Pii...");
+				
+				String pii="";
+				
+				if(localiteminfo_str.matches("(.*?)<td:br\\s*/>\\s*(([S])(\\d{4})[-](\\d{4})[\\(](\\d{2})[\\)](\\d{5})[-](\\d))<td:br\\s*/>(.*?)"))
+					
+				{
+//					System.out.println("pii:.."+localiteminfo_str);
+					Pattern pattern = Pattern.compile("<td:br\\s*/>\\s*(([S])(\\d{4})[-](\\d{4})[\\(](\\d{2})[\\)](\\d{5})[-](\\d))<td:br\\s*/>");
+					java.util.regex.Matcher m = pattern.matcher(localiteminfo_str);
+					if(m.find()) 
+					  {
+						pii=m.group(1);
+						localiteminfo_str=localiteminfo_str.replaceAll(m.group(),"<td:br/>");
+					  }
+
+//					System.out.println("piino:.."+pii);
+									
+				}
+				else
+				{
+					//log 4j writting error msg to fil
+		    		String err1="\t\tError[9]: PII Information is not found!";
+		    		System.out.println(err1);
+		    		byte b[]=err1.getBytes();
+		    		fos.write(b);
+		    		System.exit(9);
+				}
+				
+//=============================================================		
+				System.out.println("\tProcessing Doi and Articlenumber...");
+				
+				String doi="";
+				String articlenumber="";
+				
+				if(localiteminfo_str.matches("(.*?)<td:br\\s*/>\\s*((10.1016/)(.*?))<td:br\\s*/>(.*?)"))
+									
+				{
+					
+					Pattern pattern = Pattern.compile("<td:br\\s*/>\\s*((10.1016/)(.*?))<td:br\\s*/>");
+					java.util.regex.Matcher m = pattern.matcher(localiteminfo_str);
+					if(m.find()) 
+					  {
+						doi=m.group(1);
+						articlenumber=doi.substring(doi.lastIndexOf(".")+1);
+						localiteminfo_str=localiteminfo_str.replaceAll(m.group(),"<td:br/>");
+					  }
+
+					System.out.println("doino:.."+doi);
+					System.out.println("Articleno:.."+articlenumber);
+									
+				}
+				else
+				{
+					//log 4j writting error msg to fil
+		    		String err1="\t\tError[10]: Doi and Articlenumber Information is not found!";
+		    		System.out.println(err1);
+		    		byte b[]=err1.getBytes();
+		    		fos.write(b);
+		    		System.exit(10);
+				}
+				
+				
+				return localiteminfo_str;
+			}
+			
+			
+			
+
+			public String removefromstr(String removeStr,String str)
+			{
+				System.out.println("removeStr:"+removeStr);
+				  Pattern patt = Pattern.compile((String) removeStr);
+				  java.util.regex.Matcher m = patt.matcher(str);
+				  StringBuffer sb = new StringBuffer(str.length());
+				  while (m.find()) 
+				  {
+				    String text = m.group();
+				    System.out.println("text:"+text);
+				    // ... possibly process 'text' ...
+				    System.out.println("sb-before:"+sb.toString());
+				    //m.appendReplacement(sb, m.quoteReplacement(text));
+				    m.appendReplacement(sb, "");
+				    System.out.println("sb-after:"+sb.toString());
+				  }
+				  m.appendTail(sb);
+				  return sb.toString();
+				}
+			
+			
+
+			public void initXML() throws ParserConfigurationException,
+		            TransformerConfigurationException, SAXException 
+			{
+		        // JAXP + SAX
+		        SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory
+		                .newInstance();
+
+		        th = tf.newTransformerHandler();
+		        Transformer serializer = th.getTransformer();
+		        serializer.setOutputProperty(OutputKeys.ENCODING, "ISO-8859-1");
+		        // pretty XML output
+		        serializer.setOutputProperty(
+		                "{http://xml.apache.org/xslt}indent-amount", "4");
+		        serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+		        th.setResult(out);
+		        th.startDocument();
+		        atts = new AttributesImpl();
+		        th.startElement("", "", "item-info", atts);
+
+		    }
+
+		   
+		   public void ItemInfoGen(String[] items) throws SAXException {
+		    	
+		    	
+		        atts.clear();
+
+//		        th.startElement("", "", "jid", atts);
+//		        th.characters(items[6].toCharArray(), 0, items[6].length());
+//		        System.out.println(items[6]);
+//		        
+//		        th.endElement("", "", "jid");
+		       
+		       
+		       Pattern p = Pattern.compile(" ");
+		        String[] splits = p.split(items[6]);
+		        for(String s : splits) 
+		             {
+		               System.out.println(s);
+		             }	
+		        
+	        System.out.print(splits.toString());	
+	        //System.exit(0);/
+		        
+		        th.startElement("", "", "jid", atts);
+		        th.characters(splits[0].toCharArray(), 0,splits[0].length());
+		        th.endElement("", "", "jid");
+		        System.out.println(splits[0]);
+		        
+		        th.startElement("", "", "aid", atts);
+		        th.characters(splits[1].toCharArray(), 0,splits[1].length());
+		        th.endElement("", "", "aid");
+		        System.out.println(splits[1]);
+     	        		        	       
+		        th.startElement("", "", "ce:pii", atts);
+		        th.characters(items[8].toCharArray(), 0, items[8].length());
+		        th.endElement("", "", "ce:pii");
+		        System.out.println(items[8]);
+		        
+		        th.startElement("", "", "ce:doi", atts);
+		        th.characters(items[3].toCharArray(), 0, items[3].length());
+		        th.endElement("", "", "ce:doi");
+		        System.out.println(items[3]);
+		        
+		   /*     Pattern p2 = Pattern.compile(".");
+		        String[] splits2 = p.split(items[3]);
+		        for(String s : splits2) 
+		             {
+		               System.out.println(s);
+		             }	
+		        
+		        System.out.print(splits.toString());	
+	        
+		        th.startElement("", "", "ce:article-number", atts);
+		        th.characters(splits2[3].toCharArray(), 0, splits2[3].length());
+		        th.endElement("", "", " ce:article-number");
+		        System.out.println(splits[3]);
+	       
+		        th.startElement("", "", "ce:copyright type", atts);
+		        th.characters(items[3].toCharArray(), 0, items[3].length());
+		        th.endElement("", "", "");
+		        System.out.println(items[3]);
+		    */
+		   }
+		    
+
+		    public void closeXML() throws SAXException 
+		    {
+		       
+		        th.endElement("", "", "item-info");
+		        th.endDocument();
+		    }
+		
+
+}
